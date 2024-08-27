@@ -1,1 +1,41 @@
 # Write Kubernetes Deployment Script
+
+# Specifies the API version used to create the Service object.
+apiVersion: v1
+# Defines the type of Kubernetes resource, which is a Service in this case.
+kind: Service
+metadata:
+  name: fastapi-service # The name of the Service, used to identify the Service within the cluster.
+spec:
+  type: NodePort # The type of Service. NodePort exposes the service on a static port on each Node.
+  selector:
+    app: fastapi # The selector is used to associate the Service with the Pods having the label 'app: fastapi'.
+  ports:
+    - protocol: TCP # The protocol used for the Service (TCP in this case).
+      port: 8000 # The port that the Service will expose to the outside world.
+      nodePort: 30001 # The port that the Service will use to communicate with the outside world.
+---
+apiVersion: apps/v1 # Specifies the API version used to create the Deployment object.
+kind: Deployment # Defines the type of Kubernetes resource, which is a Deployment in this case.
+metadata:
+  name: fastapi-deployment # The name of the Deployment, used to identify the Deployment within the cluster.
+spec:
+  replicas: 1 # Specifies the number of pod replicas that should be running.
+  selector:
+    matchLabels:
+      app: fastapi # The Deployment will manage pods that match this label.
+  template:
+    metadata:
+      labels:
+        app: fastapi # The label assigned to the Pods created by this Deployment.
+    spec:
+      containers:
+      - name: fastapi-container # The name of the container within the Pod.
+        image: my-fastapi-app:latest # The Docker image to be used for this container.
+        imagePullPolicy: IfNotPresent # The image pull policy. It pulls the image only if it’s not present on the node.
+        ports:
+        - containerPort: 8000 # The port that the container listens on.
+        env:
+        - name: DATABASE_URL # Environment variable to be used inside the container.
+          value: "postgresql://book_collection_part2_user:rMseBhzgWqBTxGOIB01QXQSLy9cjktvn@dpg-cr6mot56l47c7396allg-a.oregon-postgres.render.com/book_collection_part2"
+          # The value of the DATABASE_URL environment variable, containing the connection string for a PostgreSQL database.
